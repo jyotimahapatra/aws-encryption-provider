@@ -36,16 +36,17 @@ func NewV2(key string, svc kmsiface.KMSAPI, encryptionCtx map[string]string) *Pl
 }
 
 func (p *PluginV2) Decrypt(ctx context.Context, request *pbv2.DecryptRequest) (*pbv2.DecryptResponse, error) {
-	zap.L().Debug("starting decrypt operation")
+	zap.L().Info("starting decrypt operation")
 
 	if string(request.Ciphertext[0]) == "1" {
 		request.Ciphertext = request.Ciphertext[1:]
 	}
 	input := &kms.DecryptInput{
 		CiphertextBlob: request.Ciphertext,
+		KeyId:          aws.String(p.keyID),
 	}
 	if len(p.encryptionCtx) > 0 {
-		zap.L().Debug("configuring encryption context", zap.String("ctx", fmt.Sprintf("%v", p.encryptionCtx)))
+		zap.L().Info("configuring encryption context", zap.String("ctx", fmt.Sprintf("%v", p.encryptionCtx)))
 		input.EncryptionContext = p.encryptionCtx
 	}
 
@@ -55,19 +56,19 @@ func (p *PluginV2) Decrypt(ctx context.Context, request *pbv2.DecryptRequest) (*
 		return nil, fmt.Errorf("failed to decrypt %w", err)
 	}
 
-	zap.L().Debug("decrypt operation successful")
+	zap.L().Info("decrypt operation successful")
 	return &pbv2.DecryptResponse{Plaintext: result.Plaintext}, nil
 }
 
 func (p *PluginV2) Encrypt(ctx context.Context, request *pbv2.EncryptRequest) (*pbv2.EncryptResponse, error) {
-	zap.L().Debug("starting encrypt operation")
+	zap.L().Info("starting encrypt operation")
 
 	input := &kms.EncryptInput{
 		Plaintext: request.Plaintext,
 		KeyId:     aws.String(p.keyID),
 	}
 	if len(p.encryptionCtx) > 0 {
-		zap.L().Debug("configuring encryption context", zap.String("ctx", fmt.Sprintf("%v", p.encryptionCtx)))
+		zap.L().Info("configuring encryption context", zap.String("ctx", fmt.Sprintf("%v", p.encryptionCtx)))
 		input.EncryptionContext = p.encryptionCtx
 	}
 
@@ -76,7 +77,7 @@ func (p *PluginV2) Encrypt(ctx context.Context, request *pbv2.EncryptRequest) (*
 		return nil, fmt.Errorf("failed to encrypt %w", err)
 	}
 
-	zap.L().Debug("encrypt operation successful")
+	zap.L().Info("encrypt operation successful")
 	return &pbv2.EncryptResponse{Ciphertext: append([]byte("1"), result.CiphertextBlob...)}, nil
 }
 
