@@ -25,8 +25,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"sigs.k8s.io/aws-encryption-provider/pkg/cloud"
-	"sigs.k8s.io/aws-encryption-provider/pkg/healthz"
-	"sigs.k8s.io/aws-encryption-provider/pkg/livez"
 	"sigs.k8s.io/aws-encryption-provider/pkg/logging"
 	"sigs.k8s.io/aws-encryption-provider/pkg/plugin"
 	"sigs.k8s.io/aws-encryption-provider/pkg/server"
@@ -82,11 +80,11 @@ func main() {
 	}
 
 	s := server.New()
-	p := plugin.New(*key, c, *encryptionCtx)
+	p := plugin.NewV2(*key, c, *encryptionCtx)
 	p.Register(s.Server)
 	go func() {
-		http.Handle(*healthzPath, healthz.NewHandler(p))
-		http.Handle(*livezPath, livez.NewHandler(p))
+		//http.Handle(*healthzPath, healthz.NewHandler(p))
+		//http.Handle(*livezPath, livez.NewHandler(p))
 		http.Handle("/metrics", promhttp.Handler())
 		if err := http.ListenAndServe(*healthPort, nil); err != nil {
 			zap.L().Fatal("Failed to start healthcheck server", zap.Error(err))
