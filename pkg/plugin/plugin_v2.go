@@ -43,7 +43,6 @@ func (p *PluginV2) Decrypt(ctx context.Context, request *pbv2.DecryptRequest) (*
 	}
 	input := &kms.DecryptInput{
 		CiphertextBlob: request.Ciphertext,
-		KeyId:          aws.String(p.keyID),
 	}
 	if len(p.encryptionCtx) > 0 {
 		zap.L().Info("configuring encryption context", zap.String("ctx", fmt.Sprintf("%v", p.encryptionCtx)))
@@ -78,7 +77,7 @@ func (p *PluginV2) Encrypt(ctx context.Context, request *pbv2.EncryptRequest) (*
 	}
 
 	zap.L().Info("encrypt operation successful")
-	return &pbv2.EncryptResponse{Ciphertext: append([]byte("1"), result.CiphertextBlob...)}, nil
+	return &pbv2.EncryptResponse{Ciphertext: append([]byte("1"), result.CiphertextBlob...), KeyId: p.keyID}, nil
 }
 
 func (p *PluginV2) Status(context.Context, *pbv2.StatusRequest) (*pbv2.StatusResponse, error) {
