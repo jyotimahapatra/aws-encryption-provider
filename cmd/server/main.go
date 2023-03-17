@@ -45,6 +45,7 @@ func main() {
 		burstLimit    = flag.Int("burst-limit", 0, "number of tokens that can be consumed in a single call")
 		encryptionCtx = flag.StringToString("encryption-context", nil, "AWS KMS Encryption Context (e.g. 'a=b,c=d')")
 		debug         = flag.Bool("debug", false, "Print debug level logs")
+		kekEnc        = flag.String("kek-enc", "", "KEK")
 	)
 	flag.Parse()
 
@@ -84,7 +85,8 @@ func main() {
 	s := server.New()
 	p1 := plugin.NewV2(*key, c, *encryptionCtx)
 	p := plugin.New(*key, c, *encryptionCtx)
-	p.Register(s.Server)
+	p3 := plugin.NewV3(*key, c, *encryptionCtx, *kekEnc)
+	p3.Register(s.Server)
 	p1.Register(s.Server)
 	go func() {
 		http.Handle(*healthzPath, healthz.NewHandler(p))
